@@ -13,7 +13,7 @@ defmodule BoltxEcto.MixProject do
       deps: deps(),
       package: package(),
       name: "Boltx Ecto",
-      description: "Neo4j adapters for Ecto",
+      description: "An Neo4j Ecto adapter using Boltx",
       docs: docs(),
       test_coverage: [
         tool: ExCoveralls,
@@ -60,7 +60,8 @@ defmodule BoltxEcto.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:boltx, "~> 0.0.6"},
+      boltx_dep(),
+      {:ecto, "~> 3.10"},
 
       # Testing dependencies
       {:excoveralls, "~> 0.18.0", optional: true, only: [:test, :dev]},
@@ -73,5 +74,13 @@ defmodule BoltxEcto.MixProject do
       # Run me like this: `mix docs`
       {:ex_doc, "~> 0.29", only: :dev, runtime: false}
     ]
+  end
+
+  defp boltx_dep do
+    if path = System.get_env("BOLTX_PATH") do
+      {:boltx, path: path}
+    else
+      {:boltx, "~> 0.0.6"}
+    end
   end
 end

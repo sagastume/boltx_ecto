@@ -122,6 +122,7 @@ rel/example_project
 logs/
 .vscode/
 .elixir_ls/
+.elixir-tools
 
 # py related
 *~
