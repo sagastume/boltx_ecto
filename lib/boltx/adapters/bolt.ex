@@ -1,4 +1,6 @@
 defmodule Boltx.Adapters.Bolt do
+  @moduledoc false
+
   @behaviour Ecto.Adapter
 
   defmacro __before_compile__(_env) do
