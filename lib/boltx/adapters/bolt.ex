@@ -4,6 +4,7 @@ defmodule Boltx.Adapters.Bolt do
   @otp_app :boltx_ecto
 
   @behaviour Ecto.Adapter
+  @behaviour Ecto.Adapter.Schema
 
   @impl Ecto.Adapter
   defmacro __before_compile__(_env) do
@@ -45,4 +46,11 @@ defmodule Boltx.Adapters.Bolt do
   @impl Ecto.Adapter
   def loaders(:binary_id, type), do: [Ecto.UUID, type]
   def loaders(_primitive, type), do: [type]
+
+  @impl Ecto.Adapter.Schema
+  def autogenerate(:id), do: nil
+
+  @impl Ecto.Adapter.Schema
+  def insert(adapter_meta, schema_meta, fields, on_conflict, returning, options) do
+  end
 end
