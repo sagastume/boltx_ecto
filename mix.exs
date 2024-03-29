@@ -61,7 +61,7 @@ defmodule BoltxEcto.MixProject do
   defp deps do
     [
       boltx_dep(),
-      {:ecto, "~> 3.10"},
+      ecto_dep(),
 
       # Testing dependencies
       {:excoveralls, "~> 0.18.0", optional: true, only: [:test, :dev]},
@@ -81,6 +81,14 @@ defmodule BoltxEcto.MixProject do
       {:boltx, path: path}
     else
       {:boltx, "~> 0.0.6"}
+    end
+  end
+
+  defp ecto_dep do
+    if path = System.get_env("ECTO_PATH") do
+      {:ecto, path: path}
+    else
+      {:ecto, "~> 3.10"}
     end
   end
 end

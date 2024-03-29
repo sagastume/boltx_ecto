@@ -1,9 +1,11 @@
 defmodule Boltx.Adapters.Bolt do
   @moduledoc false
+  alias Boltx
 
   @otp_app :boltx_ecto
 
   @behaviour Ecto.Adapter
+  @behaviour Ecto.Adapter.Schema
 
   @impl Ecto.Adapter
   defmacro __before_compile__(_env) do
@@ -45,4 +47,46 @@ defmodule Boltx.Adapters.Bolt do
   @impl Ecto.Adapter
   def loaders(:binary_id, type), do: [Ecto.UUID, type]
   def loaders(_primitive, type), do: [type]
+
+  @impl Ecto.Adapter.Schema
+  def autogenerate(:id), do: nil
+  def autogenerate(Ecto.UUID), do: Ecto.UUID.generate()
+  def autogenerate(:binary_id), do: nil
+  def autogenerate(:embed_id), do: Ecto.UUID.generate()
+
+  @impl Ecto.Adapter.Schema
+  def insert(adapter_meta, schema_meta, params, _on_conflict, _returning, _options) do
+    labels = get_labels(schema_meta)
+    cypher = create(labels) |> Enum.join("")
+
+    uuid = List.keyfind(params, :id, 0, Ecto.UUID.generate())
+    params = params ++ [id: uuid]
+
+    %{pid: conn} = adapter_meta
+
+    case Boltx.query(conn, cypher, %{props: Enum.into(params, %{})}) do
+      {:ok, response} ->
+        {:ok, [id: Ecto.UUID.dump!(Boltx.Response.first(response)["node"].properties["id"])]}
+
+      {:error, err} ->
+        {:error, err}
+    end
+  end
+
+  defp create(labels) do
+    [
+      "CREATE ",
+      "(",
+      "node:",
+      Enum.join(labels, ":"),
+      " $props",
+      ") ",
+      "RETURN node"
+    ]
+  end
+
+  defp get_labels(schema_meta) do
+    %{source: source} = schema_meta
+    [source |> String.capitalize()]
+  end
 end
