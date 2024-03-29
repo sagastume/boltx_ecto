@@ -1,5 +1,11 @@
 import Config
 
+config :logger, level: :debug
+
+config :ecto,
+  log: true,
+  log_hex: false
+
 config :boltx_ecto,
   ecto_repos: [BoltxEctoTest.Repo]
 

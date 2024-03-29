@@ -1,4 +1,5 @@
-ExUnit.start()
+ExUnit.start(capture_log: true)
+
 Code.require_file("./support/repos.exs", __DIR__)
 Code.require_file("./support/schemas.exs", __DIR__)
 

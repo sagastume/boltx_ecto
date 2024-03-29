@@ -130,3 +130,6 @@ logs/
 __pycache__
 .pytest_cache
 *.egg-info
+
+# Enviroment variables
+.env
