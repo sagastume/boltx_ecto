@@ -60,20 +60,19 @@ defmodule Boltx.Adapters.Bolt do
     cypher = create(labels) |> Enum.join("")
 
     key = primary_key!(schema_meta, returning)
-    uuid = List.keyfind(params, key, 0, Ecto.UUID.generate())
-    params = [{key, uuid} | params]
+    primary_key = maybe_generate_key(key, params)
+
+    params =
+      case List.keymember?(params, key, 0) do
+        true -> List.keyreplace(params, key, 0, {key, primary_key})
+        false -> [{key, primary_key} | params]
+      end
 
     %{pid: conn} = adapter_meta
 
     case Boltx.query(conn, cypher, %{props: Enum.into(params, %{})}) do
       {:ok, response} ->
-        {:ok,
-         [
-           {key,
-            Ecto.UUID.dump!(
-              Boltx.Response.first(response)["node"].properties[Atom.to_string(key)]
-            )}
-         ]}
+        {:ok, returning_fields(key, returning, response)}
 
       {:error, err} ->
         {:error, err}
@@ -105,9 +104,28 @@ defmodule Boltx.Adapters.Bolt do
     capitalize_labels(all_labels)
   end
 
-  defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
+  defp primary_key!(%{autogenerate_id: {_, key, _type}}, _), do: key
+  defp primary_key!(schema_meta, []), do: hd(schema_meta.schema.__schema__(:primary_key))
+
+  defp maybe_generate_key(key, params) do
+    case List.keymember?(params, key, 0) do
+      true -> Ecto.UUID.cast!(params[key])
+      false -> Ecto.UUID.generate()
+    end
+  end
 
   defp capitalize_labels(labels) do
     Enum.map(labels, &String.capitalize/1)
+  end
+
+  defp returning_fields(key, returning, response) do
+    properties = Boltx.Response.first(response)["node"].properties
+
+    Enum.map(returning, fn field ->
+      case field do
+        ^key -> {field, Ecto.UUID.dump!(Map.get(properties, Atom.to_string(field)))}
+        _ -> {field, Map.get(properties, Atom.to_string(field))}
+      end
+    end)
   end
 end
