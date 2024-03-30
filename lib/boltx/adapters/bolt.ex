@@ -55,8 +55,8 @@ defmodule Boltx.Adapters.Bolt do
   def autogenerate(:embed_id), do: Ecto.UUID.generate()
 
   @impl Ecto.Adapter.Schema
-  def insert(adapter_meta, schema_meta, params, _on_conflict, returning, _options) do
-    labels = get_labels(schema_meta)
+  def insert(adapter_meta, schema_meta, params, _on_conflict, returning, options) do
+    labels = get_labels(schema_meta, options)
     cypher = create(labels) |> Enum.join("")
 
     key = primary_key!(schema_meta, returning)
@@ -92,13 +92,17 @@ defmodule Boltx.Adapters.Bolt do
     ]
   end
 
-  defp get_labels(schema_meta) do
+  defp get_labels(schema_meta, options) do
     labels = schema_meta.schema.__node_labels__
 
-    case labels do
-      [] -> [String.capitalize(schema_meta.source)]
-      _ -> capitalize_labels(labels)
-    end
+    all_labels =
+      case labels do
+        [] -> [String.capitalize(schema_meta.source)]
+        _ -> capitalize_labels(labels)
+      end
+
+    all_labels = Enum.concat(all_labels, options[:labels] || [])
+    capitalize_labels(all_labels)
   end
 
   defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key

@@ -49,5 +49,14 @@ defmodule BoltxEctoTest do
       assert {:ok, response} = Repo.insert(person)
       assert {:ok, _} = Ecto.UUID.cast(response.id)
     end
+
+    test "insert schema with extra labels" do
+      person = %MySchemaLabels{
+        name: "Walker B. Sanders"
+      }
+
+      assert {:ok, response} = Repo.insert(person, labels: ["FINANCE"])
+      assert {:ok, _} = Ecto.UUID.cast(response.id)
+    end
   end
 end
