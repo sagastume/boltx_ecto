@@ -16,6 +16,9 @@ Boltx Ecto is an Neo4j adapter for Ecto using Boltx.
 
 ## Installation
 
+> [!NOTE]  
+> The package has not yet been published in hex.
+
 Add :boltx_ecto to your dependencies:
 
 ```elixir
