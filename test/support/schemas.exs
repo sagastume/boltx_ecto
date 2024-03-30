@@ -20,6 +20,7 @@ end
 defmodule BoltxEctoTest.Schemas.Pet do
   use Boltx.Schema
 
+  # custom primary key
   @primary_key {:uuid, :binary_id, autogenerate: true}
 
   schema "Pet" do
