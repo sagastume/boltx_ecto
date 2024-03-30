@@ -10,7 +10,7 @@ config :boltx_ecto,
   ecto_repos: [BoltxEctoTest.Repo]
 
 config :boltx_ecto, BoltxEctoTest.Repo,
-  uri: "bolt://localhost:7689",
+  uri: System.get_env("BOLT_URI"),
   auth: [username: "neo4j", password: "boltxPassword"],
   user_agent: "boltxEctoTest/1",
   pool_size: 15,

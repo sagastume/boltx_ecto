@@ -1,6 +1,6 @@
-# Boltx Ecto
+# Boltx Ecto (PRE-ALPHA)
 
-Boltx Ecto is an adapter for Ecto using Boltx.
+Boltx Ecto is an Neo4j adapter for Ecto using Boltx.
 
 
 ## Features
