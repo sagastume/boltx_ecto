@@ -28,6 +28,17 @@ defmodule BoltxEctoTest do
     end
   end
 
+  describe "Autogenerate" do
+    test "autogenerate id" do
+      assert Boltx.Adapters.Bolt.autogenerate(:id) == nil
+    end
+
+    test "autogenerate embed_id" do
+      embed_id = Boltx.Adapters.Bolt.autogenerate(:embed_id)
+      assert {:ok, _} = Ecto.UUID.cast(embed_id)
+    end
+  end
+
   describe "Insert" do
     test "simple insert schema" do
       post = %Post{

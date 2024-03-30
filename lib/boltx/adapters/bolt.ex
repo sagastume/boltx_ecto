@@ -50,7 +50,6 @@ defmodule Boltx.Adapters.Bolt do
 
   @impl Ecto.Adapter.Schema
   def autogenerate(:id), do: nil
-  def autogenerate(Ecto.UUID), do: Ecto.UUID.generate()
   def autogenerate(:binary_id), do: nil
   def autogenerate(:embed_id), do: Ecto.UUID.generate()
 
