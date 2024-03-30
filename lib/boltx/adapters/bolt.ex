@@ -55,18 +55,25 @@ defmodule Boltx.Adapters.Bolt do
   def autogenerate(:embed_id), do: Ecto.UUID.generate()
 
   @impl Ecto.Adapter.Schema
-  def insert(adapter_meta, schema_meta, params, _on_conflict, _returning, _options) do
+  def insert(adapter_meta, schema_meta, params, _on_conflict, returning, _options) do
     labels = get_labels(schema_meta)
     cypher = create(labels) |> Enum.join("")
 
-    uuid = List.keyfind(params, :id, 0, Ecto.UUID.generate())
-    params = params ++ [id: uuid]
+    key = primary_key!(schema_meta, returning)
+    uuid = List.keyfind(params, key, 0, Ecto.UUID.generate())
+    params = [{key, uuid} | params]
 
     %{pid: conn} = adapter_meta
 
     case Boltx.query(conn, cypher, %{props: Enum.into(params, %{})}) do
       {:ok, response} ->
-        {:ok, [id: Ecto.UUID.dump!(Boltx.Response.first(response)["node"].properties["id"])]}
+        {:ok,
+         [
+           {key,
+            Ecto.UUID.dump!(
+              Boltx.Response.first(response)["node"].properties[Atom.to_string(key)]
+            )}
+         ]}
 
       {:error, err} ->
         {:error, err}
@@ -89,4 +96,6 @@ defmodule Boltx.Adapters.Bolt do
     %{source: source} = schema_meta
     [source |> String.capitalize()]
   end
+
+  defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
 end
