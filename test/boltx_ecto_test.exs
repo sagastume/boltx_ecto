@@ -6,6 +6,16 @@ defmodule BoltxEctoTest do
 
   use ExUnit.Case
 
+  defmodule MySchemaLabels do
+    use Boltx.Schema
+
+    schema "my_schema_labels" do
+      field(:name, :string)
+
+      labels(["Person", "employee", "manager"])
+    end
+  end
+
   describe "Insert" do
     test "simple insert schema" do
       post = %Post{
@@ -29,6 +39,15 @@ defmodule BoltxEctoTest do
 
       assert {:ok, response} = Repo.insert(pet)
       assert {:ok, _} = Ecto.UUID.cast(response.uuid)
+    end
+
+    test "insert schema with multiple labels" do
+      person = %MySchemaLabels{
+        name: "Roberto J. Ball"
+      }
+
+      assert {:ok, response} = Repo.insert(person)
+      assert {:ok, _} = Ecto.UUID.cast(response.id)
     end
   end
 end

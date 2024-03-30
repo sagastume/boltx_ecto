@@ -93,9 +93,17 @@ defmodule Boltx.Adapters.Bolt do
   end
 
   defp get_labels(schema_meta) do
-    %{source: source} = schema_meta
-    [source |> String.capitalize()]
+    labels = schema_meta.schema.__node_labels__
+
+    case labels do
+      [] -> [String.capitalize(schema_meta.source)]
+      _ -> capitalize_labels(labels)
+    end
   end
 
   defp primary_key!(%{autogenerate_id: {_, key, _type}}, [key]), do: key
+
+  defp capitalize_labels(labels) do
+    Enum.map(labels, &String.capitalize/1)
+  end
 end
