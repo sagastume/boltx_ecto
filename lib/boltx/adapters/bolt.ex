@@ -1,6 +1,7 @@
 defmodule Boltx.Adapters.Bolt do
   @moduledoc false
   alias Boltx
+  alias Boltx.Cypher
 
   @otp_app :boltx_ecto
 
@@ -70,6 +71,29 @@ defmodule Boltx.Adapters.Bolt do
     %{pid: conn} = adapter_meta
 
     case Boltx.query(conn, cypher, %{props: Enum.into(params, %{})}) do
+      {:ok, response} ->
+        {:ok, returning_fields(key, returning, response)}
+
+      {:error, err} ->
+        {:error, err}
+    end
+  end
+
+  @impl Ecto.Adapter.Schema
+  def update(adapter_meta, schema_meta, fields, filters, returning, options) do
+    IO.inspect(%{
+      adapter_meta: adapter_meta,
+      schema_meta: schema_meta,
+      fields: fields,
+      filters: filters,
+      returning: returning,
+      options: options
+    }, label: "update")
+
+    %{pid: conn} = adapter_meta
+    cql = Cypher.update(schema_meta, fields, filters)
+
+    case Boltx.query(conn, cql, %{props: Enum.into(params, %{})}) do
       {:ok, response} ->
         {:ok, returning_fields(key, returning, response)}
 

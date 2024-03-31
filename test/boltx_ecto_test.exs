@@ -108,5 +108,26 @@ defmodule BoltxEctoTest do
       assert {:ok, _} = Repo.insert(post, returning: true)
       assert {:ok, _} = Repo.insert(post, returning: false)
     end
+
+    test "insert a Changeset" do
+
+    end
+  end
+
+  @tag :debug
+  describe "Update" do
+    test "update a schema" do
+      {:ok, post} = Repo.insert(%Post{
+        counter: 1,
+        title: "Título del post",
+        temp: "temp",
+        public: true,
+        visits: 100,
+        intensity: 0.75,
+        posted: Date.utc_today()
+      })
+      post = Ecto.Changeset.change post, title: "New title"
+      assert {:ok, _} = Repo.update post
+    end
   end
 end
