@@ -81,19 +81,23 @@ defmodule Boltx.Adapters.Bolt do
 
   @impl Ecto.Adapter.Schema
   def update(adapter_meta, schema_meta, fields, filters, returning, options) do
+    %{pid: conn} = adapter_meta
+    key = primary_key!(schema_meta, returning)
+    filters = List.keyreplace(filters, key, 0, {key, Ecto.UUID.cast!(filters[key])})
+    cql = Cypher.update(schema_meta, fields, filters)
+
     IO.inspect(%{
       adapter_meta: adapter_meta,
       schema_meta: schema_meta,
       fields: fields,
       filters: filters,
       returning: returning,
-      options: options
+      options: options,
+      cql: cql,
+      key: key
     }, label: "update")
 
-    %{pid: conn} = adapter_meta
-    cql = Cypher.update(schema_meta, fields, filters)
-
-    case Boltx.query(conn, cql, %{props: Enum.into(params, %{})}) do
+    case Boltx.query(conn, cql, %{fields: fields}) do
       {:ok, response} ->
         {:ok, returning_fields(key, returning, response)}
 

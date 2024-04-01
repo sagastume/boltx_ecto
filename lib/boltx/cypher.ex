@@ -1,30 +1,24 @@
 defmodule Boltx.Cypher do
-
   def update(schema_meta, fields, filters, options \\ []) do
+    labels = labels(schema_meta, options)
+    filter_conditions = filters_conditions(filters)
+    set_fields = set_fields(fields)
+
     cql = """
-    MATCH (p:Post {id: 123})
-    SET p.contenido = 'Nuevo contenido',
-        p.fecha = '2024-03-31'
+    MATCH (p:#{labels} #{filter_conditions})
+    SET #{set_fields}
     RETURN p
     """
-    [
-      "MATCH",
-      "(",
-      "node:",
-      labels(schema_meta, options),
-      filters(filters),
-      ")",
-      set(fields),
-      "RETURN node"
-    ]
+    cql
   end
 
-  defp filters(filters) do
-    Enum.into(filters, %{})
+  defp filters_conditions(filters) do
+    IO.inspect(filters)
+    "WHERE " <> Enum.map(filters, fn {key, value} -> "#{key} = '#{value}'" end) |> Enum.join(" AND ")
   end
 
-  defp set(fields) do
-    fields
+  defp set_fields(fields) do
+    Enum.map(fields, fn {key, value} -> "p.#{key} = '#{value}'" end) |> Enum.join(",\n        ")
   end
 
   defp labels(schema_meta, options) do
@@ -32,12 +26,12 @@ defmodule Boltx.Cypher do
 
     all_labels =
       case labels do
-        [] -> [String.capitalize(schema_meta.source)]
+        [] -> String.capitalize(schema_meta.source)
         _ -> capitalize_labels(labels)
       end
 
-    all_labels = Enum.concat(all_labels, options[:labels] || [])
-    capitalize_labels(all_labels)
+    all_labels = Enum.concat([all_labels], options[:labels] || [])
+    Enum.join(all_labels, ":")
   end
 
   defp capitalize_labels(labels) do
