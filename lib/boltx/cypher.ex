@@ -1,24 +1,23 @@
 defmodule Boltx.Cypher do
-  def update(schema_meta, fields, filters, options \\ []) do
-    labels = labels(schema_meta, options)
-    filter_conditions = filters_conditions(filters)
-    set_fields = set_fields(fields)
+  @moduledoc false
 
-    cql = """
-    MATCH (p:#{labels} #{filter_conditions})
-    SET #{set_fields}
-    RETURN p
-    """
-    cql
+  def match(), do: "MATCH"
+
+  def match(labels) when is_list(labels) do
+    "MATCH (:#{labels_clause(labels)})"
   end
 
-  defp filters_conditions(filters) do
-    IO.inspect(filters)
-    "WHERE " <> Enum.map(filters, fn {key, value} -> "#{key} = '#{value}'" end) |> Enum.join(" AND ")
+  def match(labels, alias_node) when is_list(labels) do
+    "MATCH (#{alias_node}:#{labels_clause(labels)})"
   end
 
-  defp set_fields(fields) do
-    Enum.map(fields, fn {key, value} -> "p.#{key} = '#{value}'" end) |> Enum.join(",\n        ")
+  def match(labels, alias_node, filters) when is_list(labels) do
+    {"MATCH (#{alias_node}:#{labels_clause(labels)} $filters)", %{filters: filters}}
+  end
+
+  defp labels_clause(labels) when is_list(labels) do
+    labels = Enum.map(labels, &String.capitalize/1)
+    Enum.join(labels, ":")
   end
 
   defp labels(schema_meta, options) do
